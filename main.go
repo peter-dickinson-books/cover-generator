@@ -9,6 +9,7 @@ import (
 	"image"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/gosimple/slug"
 	"github.com/nfnt/resize"
@@ -142,19 +143,19 @@ func doFormat(orig image.Image, cfg Config, format Format, answers map[string]st
 func main() {
 	config := initConfig()
 
-	answers := make(map[string]string)
-
-	for k, v := range config.Questions {
-		fmt.Printf(v + ": ")
-		reader := bufio.NewReader(os.Stdin)
-		bytes, _, _ := reader.ReadLine()
-		answers[k] = string(bytes)
-	}
-
+	prompt := bufio.NewReader(os.Stdin)
 	paths := os.Args[1:]
 
+	if len(paths) < 1 {
+		fmt.Print("Source Image Paths: ")
+		bytes, _, _ := prompt.ReadLine()
+		paths = append(paths, strings.Split(string(bytes), " ")...)
+	}
+
 	for _, path := range paths {
+
 		fmt.Println(path)
+
 		reader, err := os.Open(path)
 		if err != nil {
 			fatal(err)
@@ -164,6 +165,13 @@ func main() {
 		img, _, err := image.Decode(reader)
 		if err != nil {
 			fatal(err)
+		}
+
+		answers := make(map[string]string)
+		for k, v := range config.Questions {
+			fmt.Printf(v + ": ")
+			bytes, _, _ := prompt.ReadLine()
+			answers[k] = string(bytes)
 		}
 
 		for _, format := range config.Formats {
