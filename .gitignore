@@ -2,3 +2,4 @@ cover-generator
 images/
 covers.yaml
 *.jpg
+*.tar.gz
